@@ -27,7 +27,7 @@ def main(stdscr):
     curses.curs_set(0)
  
 
-    # Opções do menu
+    # Opções do menu principal 
     menu_opcoes = ["Novo Jogo", "Opções", "Sair do Jogo"]
     selecionado = 0
 
