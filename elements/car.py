@@ -1,5 +1,5 @@
 import curses
-from ascii_art import car_art
+from utils.ascii_art import car_art
 
 class Car:
     def __init__(self,  width, height):
@@ -23,8 +23,8 @@ class Car:
         #     self.direction = "parado"
 
         if self.direction == "right":
-            self.x += 1
+            self.x += 3
 
         elif self.direction == "left":
-            self.x -= 1
+            self.x -= 3
       
