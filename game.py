@@ -3,7 +3,7 @@ import curses
 from curses import wrapper
 
 from elements.car import Car
-from utils.ascii_art import title
+from elements.enemy import Enemy
 from scenario.Street import Street
 from utils.Logger import Logger
 
@@ -39,33 +39,65 @@ class Game():
         # Screen Size
         height, width = main_screen.getmaxyx()
         Logger.log(
-          "------- Iniciando o jogo {}x{} -------"
-          .format(width, height))
+            "------- Iniciando o jogo {}x{} -------"
+            .format(width, height))
 
         # Classes instances
         car = Car(width, height)
         street = Street(width, height)
+        adversaries = []
 
         # Testes com a pista
         i = 0
         subindo = True
 
-        while True:
-            key = main_screen.getch()
-            car.update(key)
+        j = 0
+        parado = False
 
-            game.draw(0, 0, street.ascii[i])
+        gameCounter = 0
+
+        # Game loop
+        while True:
+            gameCounter += 1
+            key = main_screen.getch()
+
+            #! Todo: pontuação alterar a pista
+            actualStreet = street.ascii[i]
+
+            # Cria os adversários
+            if (len(adversaries) < 3 and gameCounter % 50 == 0):
+                adversaries.append(Enemy(width, height))
+
+            car.update(key, actualStreet)
+
+            game.draw(0, 0, actualStreet)
             game.draw(car.x, car.y, car.ascii)
+
+            # Atualiza os adversários
+            for enemy in adversaries:
+                enemy.update(actualStreet)
+                game.draw(enemy.x, enemy.y, enemy.ascii)
+
+                if (enemy.yFinal >= height):
+                    adversaries.remove(enemy)
 
             # Atualiza a tela
             main_screen.refresh()
             curses.napms(napms_value)
 
-            Logger.log("Utilizando a pista {}.".format(i))
             if (i >= len(street.ascii) - 1 and subindo):
                 subindo = False
+                parado = True
             elif (i <= 0 and not subindo):
                 subindo = True
+                parado = True
+
+            j += 1
+            if (parado and j <= 100):
+                continue
+            else:
+                parado = False
+                j = 0
 
             if (subindo):
                 i += 1
