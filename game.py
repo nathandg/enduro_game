@@ -47,13 +47,6 @@ class Game():
         street = Street(width, height)
         adversaries = []
 
-        # Testes com a pista
-        i = 0
-        subindo = True
-
-        j = 0
-        parado = False
-
         gameCounter = 0
 
         # Game loop
@@ -61,17 +54,15 @@ class Game():
             gameCounter += 1
             key = main_screen.getch()
 
-            #! Todo: pontuação alterar a pista
-            actualStreet = street.ascii[i]
-
-            # Cria os adversários
-            if (len(adversaries) < 3 and gameCounter % 50 == 0):
-                adversaries.append(Enemy(width, height))
-
+            actualStreet = street.update()
             car.update(key, actualStreet)
 
             game.draw(0, 0, actualStreet)
             game.draw(car.x, car.y, car.ascii)
+
+            # Cria os adversários
+            if (len(adversaries) < 3 and gameCounter % 50 == 0):
+                adversaries.append(Enemy(width, height))
 
             # Atualiza os adversários
             for enemy in adversaries:
@@ -83,26 +74,7 @@ class Game():
 
             # Atualiza a tela
             main_screen.refresh()
-            curses.napms(napms_value)
-
-            if (i >= len(street.ascii) - 1 and subindo):
-                subindo = False
-                parado = True
-            elif (i <= 0 and not subindo):
-                subindo = True
-                parado = True
-
-            j += 1
-            if (parado and j <= 100):
-                continue
-            else:
-                parado = False
-                j = 0
-
-            if (subindo):
-                i += 1
-            else:
-                i -= 1
+            curses.napms(napms_value) 
 
     def run(self):
         """ Run the game """

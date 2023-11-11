@@ -1,14 +1,29 @@
 import math
+import random
 from utils.Logger import Logger
+
+STATES = ["left", "center", "right"]
 
 
 class Street():
     def __init__(self, width, height):
         self.width = width
         self.height = height
+
         self.CX = self.width / 2
         self.L = self.width * 0.65
         self.ascii = []
+
+        self.counter = 0
+        self.toMode = 100
+        self.isMoving = False
+
+        self.state = STATES[1]
+        self.newState = None
+
+        self.position = 0
+        self.lenPositions = 0
+
         self.generate()
 
     def math(self, cx, y):
@@ -31,7 +46,8 @@ class Street():
         positions = math.ceil(maxCx - minCx)
         Logger.log("Geração de pistas com o minCx {}.".format(minCx))
         for position in range(positions):
-            Logger.log("Gerando a pista {} de {}.".format(position, round(self.L)))
+            Logger.log("Gerando a pista {} de {}.".format(
+                position, round(self.L)))
             street = []
             for line in range(self.height):
                 positionsX = self.math(minCx + position, line)
@@ -42,12 +58,60 @@ class Street():
                     + "|"
                     + " " * (positionsX[1] - 1))
             self.ascii.append(street)
+        self.lenPositions = len(self.ascii)
+        self.position = self.lenPositions // 2
 
+    def update(self):
 
-if __name__ == "__main__":
-    street = Street()
-    screen = []
+        if self.isMoving:
+            if self.state == STATES[0]:
+                if self.newState == STATES[1]:
+                    if self.position < self.lenPositions // 2:
+                        self.position += 1
+                    else:
+                        self.isMoving = False
+                        self.state = self.newState
+                else:
+                    if self.position < self.lenPositions - 1:
+                        self.position += 1
+                    else:
+                        self.isMoving = False
+                        self.state = self.newState
 
-    for i in range(street.height):
-        print(street.math(150, i))
-        print("-----------\n")
+            elif self.state == STATES[1]:
+                if self.newState == STATES[0]:
+                    if self.position > 0:
+                        self.position -= 1
+                    else:
+                        self.isMoving = False
+                        self.state = self.newState
+                else:
+                    if self.position < self.lenPositions - 1:
+                        self.position += 1
+                    else:
+                        self.isMoving = False
+                        self.state = self.newState
+
+            elif self.state == STATES[2]:
+                if self.newState == STATES[1]:
+                    if self.position > self.lenPositions // 2:
+                        self.position -= 1
+                    else:
+                        self.isMoving = False
+                        self.state = self.newState
+                else:
+                    if self.position > 0:
+                        self.position -= 1
+                    else:
+                        self.isMoving = False
+                        self.state = self.newState
+
+        self.counter += 1
+        if self.counter >= self.toMode:
+            self.newState = random.choice(STATES)
+            if self.newState != self.state:
+                self.isMoving = True
+                self.counter = 0
+            else:
+                self.counter = 80
+        return self.ascii[self.position]
