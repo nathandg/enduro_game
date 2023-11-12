@@ -5,7 +5,10 @@ from curses import wrapper
 from elements.car import Car
 from elements.enemy import Enemy
 from scenario.Street import Street
+
 from utils.Logger import Logger
+from Player.PlayerInfo import PlayerInfo
+from utils.Enums import Difficulty
 
 
 class Game():
@@ -14,15 +17,35 @@ class Game():
     def __init__(self):
         self.screen = None
 
-    def draw(self, x, y, list, color=0):
+    def draw(self, x, y, list, color=0, effect=None):
         """ Print text in screen """
         for i, line in enumerate(list):
-            self.screen.addstr(y + i, x, line, curses.color_pair(color))
-        self.screen.refresh()
+            if effect == "blink":
+                self.screen.addstr(
+                    y + i, x, line, curses.color_pair(color) | curses.A_BLINK)
+            elif effect == "bold":
+                self.screen.addstr(
+                    y + i, x, line, curses.color_pair(color) | curses.A_BOLD)
+            elif effect == "underline":
+                self.screen.addstr(
+                    y + i, x, line, curses.color_pair(color) | curses.A_UNDERLINE)
+            else:
+                self.screen.addstr(y + i, x, line, curses.color_pair(color))
+
+    def write(self, x, y, text, color=0):
+        """ Print text in screen """
+        self.screen.addstr(y, x, text, curses.color_pair(color))
 
     def main(self, main_screen):
         """ main function """
         self.screen = main_screen
+
+        # Colors
+        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_BLACK)
 
         # Curses config for game optimization
         napms_value = 25
@@ -49,8 +72,18 @@ class Game():
 
         gameCounter = 0
 
+        # Configurar a dificuldade
+        PlayerInfo.difficulty = Difficulty.NOOB
+        if (PlayerInfo.difficulty == Difficulty.NOOB):
+            PlayerInfo.position = 30
+        elif (PlayerInfo.difficulty == Difficulty.EXPERT):
+            PlayerInfo.position = 50
+
         # Game loop
         while True:
+            if PlayerInfo.position <= 0:
+                break
+
             gameCounter += 1
             key = main_screen.getch()
 
@@ -70,11 +103,15 @@ class Game():
                 game.draw(enemy.x, enemy.y, enemy.ascii)
 
                 if (enemy.yFinal >= height):
+                    PlayerInfo.overtake()
                     adversaries.remove(enemy)
+
+            # Mostra as informações do jogador
+            game.write(0, 1, "Posição: {}".format(PlayerInfo.position), 1)
 
             # Atualiza a tela
             main_screen.refresh()
-            curses.napms(napms_value) 
+            curses.napms(napms_value)
 
     def run(self):
         """ Run the game """

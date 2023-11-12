@@ -1,8 +1,9 @@
 import math
 import random
 from utils.Logger import Logger
+from utils.Enums import Direction
 
-STATES = ["left", "center", "right"]
+DIRECTIONS = [Direction.LEFT, Direction.CENTER, Direction.RIGHT]
 
 
 class Street():
@@ -18,7 +19,7 @@ class Street():
         self.toMode = 100
         self.isMoving = False
 
-        self.state = STATES[1]
+        self.state = Direction.CENTER
         self.newState = None
 
         self.position = 0
@@ -64,8 +65,8 @@ class Street():
     def update(self):
 
         if self.isMoving:
-            if self.state == STATES[0]:
-                if self.newState == STATES[1]:
+            if self.state == Direction.LEFT:
+                if self.newState == Direction.CENTER:
                     if self.position < self.lenPositions // 2:
                         self.position += 1
                     else:
@@ -78,8 +79,8 @@ class Street():
                         self.isMoving = False
                         self.state = self.newState
 
-            elif self.state == STATES[1]:
-                if self.newState == STATES[0]:
+            elif self.state == Direction.CENTER:
+                if self.newState == Direction.LEFT:
                     if self.position > 0:
                         self.position -= 1
                     else:
@@ -92,8 +93,8 @@ class Street():
                         self.isMoving = False
                         self.state = self.newState
 
-            elif self.state == STATES[2]:
-                if self.newState == STATES[1]:
+            elif self.state == Direction.RIGHT:
+                if self.newState == Direction.CENTER:
                     if self.position > self.lenPositions // 2:
                         self.position -= 1
                     else:
@@ -108,7 +109,7 @@ class Street():
 
         self.counter += 1
         if self.counter >= self.toMode:
-            self.newState = random.choice(STATES)
+            self.newState = random.choice(DIRECTIONS)
             if self.newState != self.state:
                 self.isMoving = True
                 self.counter = 0
