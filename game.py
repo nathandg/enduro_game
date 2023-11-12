@@ -27,7 +27,7 @@ class Game():
         """ Print text in screen """
         if effect and effect in TextEffects.__members__:
             combined = curses.color_pair(color) | TextEffects[effect].value
-            self.screen.addstr(y, x, text, combined)  
+            self.screen.addstr(y, x, text, combined)
         else:
             self.screen.addstr(y, x, text, curses.color_pair(color))
 
@@ -68,16 +68,12 @@ class Game():
 
         # Game loop
         while True:
-            if PlayerInfo.position <= 20:
-                colors.snowTheme()
-            if PlayerInfo.position <= 0:
-                break
-
             gameCounter += 1
             key = main_screen.getch()
 
             actualStreet = street.update()
             car.update(key, actualStreet)
+            colors.update(gameCounter)
 
             game.draw(0, 0, actualStreet, colors.street)
             game.draw(car.x, car.y, car.ascii, colors.playerCar)
@@ -95,7 +91,8 @@ class Game():
                     adversaries.remove(enemy)
 
             # Mostra as informações do jogador
-            game.write(0, 1, "Posição: {}".format(PlayerInfo.position), 6)
+            game.write(0, 1, "Posição: {}".format(
+                PlayerInfo.position), colors.ScoreText)
 
             # Atualiza a tela
             main_screen.refresh()
