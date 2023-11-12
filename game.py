@@ -8,7 +8,8 @@ from scenario.Street import Street
 
 from utils.Logger import Logger
 from Player.PlayerInfo import PlayerInfo
-from utils.Enums import Difficulty
+from utils.Enums import Difficulty, TextEffects
+from utils.Colors import Colors
 
 
 class Game():
@@ -17,35 +18,25 @@ class Game():
     def __init__(self):
         self.screen = None
 
-    def draw(self, x, y, list, color=0, effect=None):
+    def draw(self, x, y, list, color=1, effect=None):
         """ Print text in screen """
         for i, line in enumerate(list):
-            if effect == "blink":
-                self.screen.addstr(
-                    y + i, x, line, curses.color_pair(color) | curses.A_BLINK)
-            elif effect == "bold":
-                self.screen.addstr(
-                    y + i, x, line, curses.color_pair(color) | curses.A_BOLD)
-            elif effect == "underline":
-                self.screen.addstr(
-                    y + i, x, line, curses.color_pair(color) | curses.A_UNDERLINE)
-            else:
-                self.screen.addstr(y + i, x, line, curses.color_pair(color))
+            self.write(x, y + i, line, color, effect)
 
-    def write(self, x, y, text, color=0):
+    def write(self, x, y, text, color, effect=None):
         """ Print text in screen """
-        self.screen.addstr(y, x, text, curses.color_pair(color))
+        if effect and effect in TextEffects.__members__:
+            combined = curses.color_pair(color) | TextEffects[effect].value
+            self.screen.addstr(y, x, text, combined)  
+        else:
+            self.screen.addstr(y, x, text, curses.color_pair(color))
 
     def main(self, main_screen):
         """ main function """
         self.screen = main_screen
 
         # Colors
-        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
-        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        colors = Colors()
 
         # Curses config for game optimization
         napms_value = 25
@@ -54,10 +45,6 @@ class Game():
         curses.curs_set(0)
         main_screen.keypad(True)
         main_screen.nodelay(True)
-
-        # Colors
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
 
         # Screen Size
         height, width = main_screen.getmaxyx()
@@ -81,6 +68,8 @@ class Game():
 
         # Game loop
         while True:
+            if PlayerInfo.position <= 20:
+                colors.snowTheme()
             if PlayerInfo.position <= 0:
                 break
 
@@ -90,24 +79,23 @@ class Game():
             actualStreet = street.update()
             car.update(key, actualStreet)
 
-            game.draw(0, 0, actualStreet)
-            game.draw(car.x, car.y, car.ascii)
+            game.draw(0, 0, actualStreet, colors.street)
+            game.draw(car.x, car.y, car.ascii, colors.playerCar)
 
             # Cria os adversários
             if (len(adversaries) < 3 and gameCounter % 50 == 0):
-                adversaries.append(Enemy(width, height))
+                adversaries.append(Enemy(width, height, colors.randomColor()))
 
             # Atualiza os adversários
             for enemy in adversaries:
                 enemy.update(actualStreet)
-                game.draw(enemy.x, enemy.y, enemy.ascii)
-
+                game.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
                 if (enemy.yFinal >= height):
                     PlayerInfo.overtake()
                     adversaries.remove(enemy)
 
             # Mostra as informações do jogador
-            game.write(0, 1, "Posição: {}".format(PlayerInfo.position), 1)
+            game.write(0, 1, "Posição: {}".format(PlayerInfo.position), 6)
 
             # Atualiza a tela
             main_screen.refresh()

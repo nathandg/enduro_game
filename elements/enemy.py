@@ -5,7 +5,7 @@ from utils.Logger import Logger
 
 
 class Enemy:
-    def __init__(self,  screenWidth, screenHeight):
+    def __init__(self,  screenWidth, screenHeight, color=1):
         self.ascii = enemy_art_sm
         self.width = screenWidth
         self.height = screenHeight
@@ -21,6 +21,7 @@ class Enemy:
         self.incrementToMove = 2
         self.borderDistance = 5
         self.borderChoice = random.choice(["left", "right"])
+        self.color = color
 
     def identifyPositions(self, street):
         positions = []
