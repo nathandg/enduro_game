@@ -6,7 +6,7 @@ from utils.ascii_art import exit_art
 from utils.ascii_art import noob_art
 from utils.ascii_art import expert_art
 from utils.ascii_art import car_art
-from utils.ascii_art import car_art_1
+from utils.ascii_art import car_art1
 
 
 def centralizar_ascii_art(stdscr, texto):
@@ -79,15 +79,10 @@ def main(stdscr):
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.curs_set(0)
 
-<<<<<<< Updated upstream
-    # Opções do menu principal 
-    menu_opcoes = ["Novo Jogo", "Opções", "Sair do Jogo"]
-=======
     # Opções do menu
     menu_opcoes = [new_game_art, score_art, exit_art]
     titulo = [title]
     etapa = 0
->>>>>>> Stashed changes
     selecionado = 0
     altura, largura = stdscr.getmaxyx()
 
