@@ -1,72 +1,154 @@
 import curses
+from utils.ascii_art import title
+from utils.ascii_art import new_game_art
+from utils.ascii_art import score_art
+from utils.ascii_art import exit_art
+from utils.ascii_art import noob_art
+from utils.ascii_art import expert_art
+from utils.ascii_art import car_art
+from utils.ascii_art import car_art_1
 
-def centralizar_mensagem(stdscr, mensagem):
-    altura, largura = stdscr.getmaxyx() # Altura e Largura da Janela
-    coluna = (largura - len(mensagem)) // 2
-    return coluna
 
-def centralizar_opcoes(stdscr, menu_opcoes):
+def centralizar_ascii_art(stdscr, texto):
+    _, largura = stdscr.getmaxyx()
+    x = (largura - len(texto[0])) // 3
+    y = 0  # Define y como 0 para posicionar o texto no topo da tela
+    return x, y
+
+
+def draw(stdscr, x, y, lst, background=False):
+    """ Exibe texto na tela """
+    for i, line in enumerate(lst):
+        if 0 <= y + i < curses.LINES and 0 <= x < curses.COLS:
+            if background:
+                stdscr.addstr(y + i, x, line, curses.color_pair(1) | curses.A_BOLD)
+            else:
+                stdscr.addstr(y + i, x, line)
+    stdscr.refresh()
+
+
+def centralizar_opcoes_vertical(stdscr, menu_opcoes):
     altura, largura = stdscr.getmaxyx()
-    linha = altura // 2 - len(menu_opcoes) // 2
-    coluna_inicial = largura // 2
-    return linha, coluna_inicial
+
+    altura_opcoes = len(menu_opcoes) * 2
+    linha_inicial = altura // 2 - altura_opcoes // 2
+    coluna_inicial = largura // 3 - len(menu_opcoes[0][0]) // 2
+
+    # Lista para armazenar as coordenadas das opções
+    coordenadas_opcoes = []
+
+    # Calcula as coordenadas para cada opção
+    for i in range(len(menu_opcoes)):
+        linha_opcao = linha_inicial + i * 3  # Ajuste conforme necessário
+        coordenadas_opcoes.append((linha_opcao, coluna_inicial))
+
+    return coordenadas_opcoes
+
+def centralizar_opcoes_horizontal(stdscr, menu_opcoes):
+    altura, largura = stdscr.getmaxyx()
+
+    # Calcula a largura total das opções
+    largura_total = sum(len(opcao[0]) for opcao in menu_opcoes) + len(menu_opcoes) - 1  # Considera espaços entre as opções
+
+    # Calcula a coluna inicial para centralizar as opções
+    coluna_inicial = largura // 2 - largura_total // 2
+
+    # Lista para armazenar as coordenadas das opções
+    coordenadas_opcoes = []
+
+    # Calcula as coordenadas para cada opção
+    for i, opcao in enumerate(menu_opcoes):
+        coluna_opcao = coluna_inicial + sum(len(menu_opcoes[j][0]) + 1 for j in range(i))  # Adiciona 1 para o espaço entre as opções
+        linha_opcao = altura // 2
+        coordenadas_opcoes.append((linha_opcao, coluna_opcao))
+
+    return coordenadas_opcoes
 
 def main(stdscr):
-    curses.curs_set(0) 
-    stdscr.nodelay(1)  
-    stdscr.timeout(100) 
-    stdscr.keypad(1)  
+    curses.curs_set(0)
+    stdscr.nodelay(1)
+    stdscr.timeout(100)
+    stdscr.keypad(1)
 
-    # Cores 
+    # Cores
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)  
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
     # Aumenta o tamanho da fonte
     curses.curs_set(0)
-    curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)  
+    curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.curs_set(0)
- 
 
+<<<<<<< Updated upstream
     # Opções do menu principal 
     menu_opcoes = ["Novo Jogo", "Opções", "Sair do Jogo"]
+=======
+    # Opções do menu
+    menu_opcoes = [new_game_art, score_art, exit_art]
+    titulo = [title]
+    etapa = 0
+>>>>>>> Stashed changes
     selecionado = 0
+    altura, largura = stdscr.getmaxyx()
 
     while True:
         stdscr.clear()
 
-        linha, coluna_inicial = centralizar_opcoes(stdscr, menu_opcoes)
+        if etapa == 0:
+            coordenadas_opcoes = centralizar_opcoes_vertical(stdscr, menu_opcoes)
+            draw(stdscr, *centralizar_ascii_art(stdscr, title[0]), titulo[0])
 
-        # Imprime as opções do menu com destaque nas opções selecionadas e tamanho de fonte maior
-        for i, opcao in enumerate(menu_opcoes):
-            if i == selecionado:
-                stdscr.addstr(linha + i, coluna_inicial, opcao, curses.color_pair(1) | curses.A_BOLD)
-            else:
-                stdscr.addstr(linha + i, coluna_inicial, opcao, curses.color_pair(2) | curses.A_BOLD)
+            for i, (y, x) in enumerate(coordenadas_opcoes):
+                opcao = menu_opcoes[i]
+                if selecionado == i:
+                    draw(stdscr, x + 35, y + 5, opcao, True)
+                else:
+                    draw(stdscr, x + 35, y + 5, opcao, False)
 
-        # Captura a tecla que o usuário está digitando
+        elif etapa == 1:
+            coordenadas_opcoes = centralizar_opcoes_horizontal(stdscr, menu_opcoes)
+            draw(stdscr, *centralizar_ascii_art(stdscr, title[0]), titulo[0])
+
+            for i, (y, x) in enumerate(coordenadas_opcoes):
+                opcao = menu_opcoes[i]
+                if selecionado == i:
+                    draw(stdscr, x + 5, y + 10, opcao, True)
+                else:
+                    draw(stdscr, x + 25, y + 10, opcao, False)
+
         key = stdscr.getch()
 
-        if key == curses.KEY_UP and selecionado > 0:
-            selecionado -= 1
-        elif key == curses.KEY_DOWN and selecionado < len(menu_opcoes) - 1:
-            selecionado += 1
-        elif key == ord("\n"):
-            if selecionado == 0:
-                mensagem = "Jogo roda"
-                coluna = centralizar_mensagem(stdscr, mensagem)
-                stdscr.addstr(linha + len(menu_opcoes) + 1, coluna, mensagem)
-                stdscr.refresh()
-                stdscr.getch()
-            elif selecionado == 1:
-                mensagem = "Ideias de opção"
-                coluna = centralizar_mensagem(stdscr, mensagem)
-                stdscr.addstr(linha + len(menu_opcoes) + 1, coluna, mensagem)
-                stdscr.refresh()
-                stdscr.getch()
-            elif selecionado == 2:
-                break  # Sair do jogo se a opção "Sair do Jogo" for selecionada
+        if etapa == 0:
+            if key == curses.KEY_UP and selecionado > 0:
+                selecionado -= 1
+            elif key == curses.KEY_DOWN and selecionado < len(menu_opcoes) - 1:
+                selecionado += 1
+            elif key == ord("\n"):
+                if selecionado == 0:
+                    stdscr.clear()
+                    etapa = 1
+                    titulo = [title]
+                    menu_opcoes = [noob_art, expert_art]
+                elif selecionado == 1:
+                    break
+                elif selecionado == 2:
+                    break
+        elif etapa == 1:
+            if key == curses.KEY_LEFT and selecionado > 0:
+                selecionado -= 1
+            elif key == curses.KEY_RIGHT and selecionado < len(menu_opcoes) - 1:
+                selecionado += 1
+            elif key == ord("\n"):
+                # Adicione aqui a lógica para tratar a escolha na etapa 1
+                if selecionado == 0:
+                    # Lógica para escolher "Noob"
+                    break
+                elif selecionado == 1:
+                    # Lógica para escolher "Expert"
+                    break
 
-    curses.endwin()  # Restaura a configuração do terminal
+        stdscr.refresh()
+
 
 if __name__ == "__main__":
     curses.wrapper(main)
