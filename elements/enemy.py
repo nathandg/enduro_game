@@ -2,6 +2,8 @@ import random
 
 from utils.ascii_art import enemy_art_bg, enemy_art_md, enemy_art_sm
 from utils.Logger import Logger
+from utils.Enums import Difficulty
+from Player.PlayerInfo import PlayerInfo
 
 
 class Enemy:
@@ -18,10 +20,16 @@ class Enemy:
         self.yFinal = self.y + self.carHeight
 
         self.increment = 0
-        self.incrementToMove = 2
+        self.incrementToMove = self.getIncrementByDifficulty()
         self.borderDistance = 5
         self.borderChoice = random.choice(["left", "right"])
         self.color = color
+
+    def getIncrementByDifficulty(self):
+        if PlayerInfo.difficulty == Difficulty.NOOB:
+            return 1
+        elif PlayerInfo.difficulty == Difficulty.EXPERT:
+            return 0
 
     def identifyPositions(self, street):
         positions = []
@@ -47,6 +55,16 @@ class Enemy:
 
         self.carWidth = len(self.ascii[0])
         self.carHeight = len(self.ascii)
+        self.xFinal = self.x + self.carWidth
+        self.yFinal = self.y + self.carHeight
+
+    def collide(self, car):
+        if self.borderChoice == "left":
+            return self.xFinal > car.x
+        else:
+            Logger.log("Enemy right: x: {} | car.xFinal: {}".format(
+                self.x, car.xFinal))
+            return self.x < car.xFinal
 
     def update(self, street):
         complete = self.y / self.height * 100
@@ -59,7 +77,7 @@ class Enemy:
             self.x = newPosition - self.borderDistance - self.carWidth
 
         # Atualiza o tamanho do desenho
-        if complete >= 60:
+        if complete >= 55:
             self.changeCarSize("big")
         elif complete >= 20:
             self.changeCarSize("medium")
@@ -67,10 +85,8 @@ class Enemy:
             self.changeCarSize("small")
 
         if (self.increment >= self.incrementToMove):
-            Logger.log("Caindo")
             self.increment = 0
             self.y += 1
             self.yFinal += 1
         else:
-            Logger.log("incrementando")
             self.increment += 1

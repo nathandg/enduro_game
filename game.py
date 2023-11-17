@@ -1,15 +1,18 @@
 """ Enduro Game """
 import curses
+import random
+import time
 from curses import wrapper
 
 from elements.car import Car
 from elements.enemy import Enemy
 from scenario.Street import Street
 
-from utils.Logger import Logger
 from Player.PlayerInfo import PlayerInfo
+from utils.Logger import Logger
 from utils.Enums import Difficulty, TextEffects
 from utils.Colors import Colors
+from utils.ascii_art import winText
 
 
 class Game():
@@ -30,6 +33,35 @@ class Game():
             self.screen.addstr(y, x, text, combined)
         else:
             self.screen.addstr(y, x, text, curses.color_pair(color))
+
+    def winGame(self, main_screen, colors, width, height, time_elapsed):
+        """ Win the game """
+        game.draw(
+            width//2 - len(winText[0])//2,
+            height//2 - len(winText)//2,
+            winText,
+            colors.ScoreText)
+
+        game.write(
+            width//2 - 6,
+            height//2 + 5,
+            "Tempo: {:.2f}s".format(time_elapsed),
+            colors.ScoreText,
+            "BOLD")
+
+        game.write(
+            width//2 - 15,
+            height//2 + 10,
+            "Digite o seu nome: ",
+            colors.ScoreText)
+
+        main_screen.nodelay(False)  # Desativa o modo nodelay
+        curses.echo()  # Habilita o echo do input
+        main_screen.refresh()
+        name = main_screen.getstr().decode()
+
+        curses.noecho()  # Desabilita o echo do input
+        main_screen.nodelay(True)  # Reativa o modo nodelay
 
     def main(self, main_screen):
         """ main function """
@@ -52,22 +84,32 @@ class Game():
             "------- Iniciando o jogo {}x{} -------"
             .format(width, height))
 
+        gameCounter = 0
+        enemyDistance = 0
+
+        # Configurar a dificuldade
+        PlayerInfo.difficulty = Difficulty.NOOB
+        if (PlayerInfo.difficulty == Difficulty.NOOB):
+            enemyDistance = 20
+            PlayerInfo.position = 30
+        elif (PlayerInfo.difficulty == Difficulty.EXPERT):
+            enemyDistance = 10
+            PlayerInfo.position = 60
+
         # Classes instances
         car = Car(width, height)
         street = Street(width, height)
         adversaries = []
 
-        gameCounter = 0
-
-        # Configurar a dificuldade
-        PlayerInfo.difficulty = Difficulty.NOOB
-        if (PlayerInfo.difficulty == Difficulty.NOOB):
-            PlayerInfo.position = 30
-        elif (PlayerInfo.difficulty == Difficulty.EXPERT):
-            PlayerInfo.position = 50
+        started_time = time.time()
 
         # Game loop
         while True:
+            if (PlayerInfo.position <= 0):
+                time_elapsed = time.time() - started_time
+                self.winGame(main_screen, colors, width, height, time_elapsed)
+                break
+
             gameCounter += 1
             key = main_screen.getch()
 
@@ -79,14 +121,22 @@ class Game():
             game.draw(car.x, car.y, car.ascii, colors.playerCar)
 
             # Cria os adversários
-            if (len(adversaries) < 3 and gameCounter % 50 == 0):
+            if (len(adversaries) < 3 and gameCounter % enemyDistance == 0):
                 adversaries.append(Enemy(width, height, colors.randomColor()))
 
             # Atualiza os adversários
             for enemy in adversaries:
                 enemy.update(actualStreet)
                 game.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
-                if (enemy.yFinal >= height):
+
+                if car.y < (enemy.yFinal-4) and enemy.collide(car):
+                    Logger.log("Crash!")
+                    curses.beep()
+                    curses.flash()
+                    PlayerInfo.crash()
+                    adversaries.remove(enemy)
+
+                elif enemy.yFinal >= height:
                     PlayerInfo.overtake()
                     adversaries.remove(enemy)
 

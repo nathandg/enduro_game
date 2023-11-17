@@ -54,7 +54,7 @@ class Colors():
         return random.randint(2, len(self.pallet) - 1)
 
     def update(self, gameCounter):
-        if (gameCounter % 50 == 0):
+        if (gameCounter % 500 == 0):
             self.dayTheme()
             themes = [self.snowTheme, self.nightTheme, self.dayTheme]
             random.choice(themes)()
