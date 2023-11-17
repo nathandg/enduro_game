@@ -103,13 +103,12 @@ def main(stdscr):
         elif etapa == 1:
             coordenadas_opcoes = centralizar_opcoes_horizontal(stdscr, menu_opcoes)
             draw(stdscr, *centralizar_ascii_art(stdscr, title[0]), titulo[0])
-
-            for i, (y, x) in enumerate(coordenadas_opcoes):
-                opcao = menu_opcoes[i]
-                if selecionado == i:
-                    draw(stdscr, x + 5, y + 10, opcao, True)
-                else:
-                    draw(stdscr, x + 25, y + 10, opcao, False)
+            if selecionado == 0:
+                draw(stdscr, x + 45, y + 5, menu_opcoes[0])
+                draw (stdscr, x + 40, y - 3, car_art)
+            else:
+                draw(stdscr, x + 41, y + 5, menu_opcoes[1])
+                draw (stdscr, x + 40, y - 5, car_art1)
 
         key = stdscr.getch()
 
@@ -134,7 +133,6 @@ def main(stdscr):
             elif key == curses.KEY_RIGHT and selecionado < len(menu_opcoes) - 1:
                 selecionado += 1
             elif key == ord("\n"):
-                # Adicione aqui a lógica para tratar a escolha na etapa 1
                 if selecionado == 0:
                     # Lógica para escolher "Noob"
                     break
