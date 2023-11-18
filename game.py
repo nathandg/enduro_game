@@ -141,20 +141,20 @@ class Game():
                 adversaries.append(Enemy(width, height, colors.randomColor()))
 
             # Atualiza os adversários
-            for enemy in adversaries:
-                enemy.update(actualStreet)
-                game.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
+            # for enemy in adversaries:
+            #     enemy.update(actualStreet)
+            #     game.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
 
-                if car.y < (enemy.yFinal-4) and enemy.collide(car):
-                    Logger.log("Crash!")
-                    curses.beep()
-                    curses.flash()
-                    PlayerInfo.crash()
-                    adversaries.remove(enemy)
+            #     if car.y < (enemy.yFinal-4) and enemy.collide(car):
+            #         Logger.log("Crash!")
+            #         curses.beep()
+            #         curses.flash()
+            #         PlayerInfo.crash()
+            #         adversaries.remove(enemy)
 
-                elif enemy.yFinal >= height:
-                    PlayerInfo.overtake()
-                    adversaries.remove(enemy)
+            #     elif enemy.yFinal >= height:
+            #         PlayerInfo.overtake()
+            #         adversaries.remove(enemy)
 
             # Mostra as informações do jogador
             game.write(0, 1, "Posição: {}".format(

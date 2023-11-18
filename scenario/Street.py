@@ -28,6 +28,7 @@ class Street():
         self.generate()
 
     def math(self, cx, y):
+        y -= 8
         calc1 = cx + ((self.height - y) * (cx - self.CX) * y * 0.004)
         calc2 = ((self.L / (2 * self.height)) * y)
 
@@ -51,13 +52,18 @@ class Street():
                 position, round(self.L)))
             street = []
             for line in range(self.height):
-                positionsX = self.math(minCx + position, line)
-                street.append(
-                    " " * (self.width - positionsX[0] - 1)
-                    + "|"
-                    + " " * (positionsX[0] - positionsX[1] - 1)
-                    + "|"
-                    + " " * (positionsX[1] - 1))
+                if(line > 7):
+                    positionsX = self.math(minCx + position, line)
+                    street.append(
+                        " " * (self.width - positionsX[0] - 1)
+                        + "|"
+                        + " " * (positionsX[0] - positionsX[1] - 1)
+                        + "|"
+                        + " " * (positionsX[1] - 1))
+                else:
+                    street.append(
+                    " " * (self.width - 1))
+
             self.ascii.append(street)
         self.lenPositions = len(self.ascii)
         self.position = self.lenPositions // 2

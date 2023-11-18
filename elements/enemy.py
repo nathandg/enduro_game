@@ -32,18 +32,20 @@ class Enemy:
             return 0
 
     def identifyPositions(self, street):
-        positions = []
+        # TODO: Refatorar
+        # positions = []
 
-        i = 0
-        while i < len(street):
-            if street[i] == "|":
-                positions.append(i)
-            i += 1
+        # i = 0
+        # while i < len(street):
+        #     if street[i] == "|":
+        #         positions.append(i)
+        #     i += 1
 
-        if self.borderChoice == "left":
-            return positions[0]
-        else:
-            return positions[1]
+        # if self.borderChoice == "left":
+        #     return positions[0]
+        # else:
+        #     return positions[1]
+        return self.width // 2
 
     def changeCarSize(self, size):
         if size == "big":
