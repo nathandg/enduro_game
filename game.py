@@ -107,7 +107,7 @@ class Game():
         enemyDistance = 0
 
         # Configurar a dificuldade
-        PlayerInfo.difficulty = Difficulty.NOOB
+        PlayerInfo.difficulty = Difficulty.EXPERT
         if (PlayerInfo.difficulty == Difficulty.NOOB):
             enemyDistance = 20
             PlayerInfo.position = 30

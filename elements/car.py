@@ -20,7 +20,7 @@ class Car:
     
     def getVelocityByDifficulty(self):
         if PlayerInfo.difficulty == Difficulty.NOOB:
-            return 1
+            return 2
         elif PlayerInfo.difficulty == Difficulty.EXPERT:
             return 5
 
