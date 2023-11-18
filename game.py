@@ -1,11 +1,19 @@
 """ Enduro Game """
 import curses
+import random
+import time
 from curses import wrapper
 
 from elements.car import Car
-from utils.ascii_art import title
+from elements.enemy import Enemy
 from scenario.Street import Street
+
+from Player.PlayerInfo import PlayerInfo
 from utils.Logger import Logger
+from utils.Enums import Difficulty, TextEffects
+from utils.Colors import Colors
+from utils.ascii_art import winText
+from utils.Score import Score
 
 
 class Game():
@@ -14,63 +22,150 @@ class Game():
     def __init__(self):
         self.screen = None
 
-    def draw(self, x, y, list, color=0):
+    def draw(self, x, y, list, color=1, effect=None):
         """ Print text in screen """
         for i, line in enumerate(list):
-            self.screen.addstr(y + i, x, line, curses.color_pair(color))
-        self.screen.refresh()
+            self.write(x, y + i, line, color, effect)
+
+    def write(self, x, y, text, color, effect=None):
+        """ Print text in screen """
+        if effect and effect in TextEffects.__members__:
+            combined = curses.color_pair(color) | TextEffects[effect].value
+            self.screen.addstr(y, x, text, combined)
+        else:
+            self.screen.addstr(y, x, text, curses.color_pair(color))
+
+    def get_unique_name(self, main_screen, width, height, colors):
+        """ Get a unique name from the user """
+        while True:
+            main_screen.move(height//2 + 12, 0)
+            main_screen.clrtoeol()
+            game.write(
+                width//2 - 15,
+                height//2 + 12,
+                "Nome já existe, digite outro: ",
+                colors.ScoreText
+            )
+            name = main_screen.getstr().decode()
+            if not Score.name_already_exists(name):
+                return name
+
+    def winGame(self, main_screen, colors, width, height, time_elapsed):
+        """ Win the game """
+        game.draw(
+            width//2 - len(winText[0])//2,
+            height//2 - len(winText)//2,
+            winText,
+            colors.ScoreText)
+
+        game.write(
+            width//2 - 6,
+            height//2 + 5,
+            "Tempo: {:.2f}s".format(time_elapsed),
+            colors.ScoreText,
+            "BOLD")
+
+        game.write(
+            width//2 - 15,
+            height//2 + 10,
+            "Digite o seu nome: ",
+            colors.ScoreText)
+
+        main_screen.nodelay(False)
+        curses.echo()
+        main_screen.refresh()
+        name = main_screen.getstr().decode()
+        if Score.name_already_exists(name):
+            name = self.get_unique_name(main_screen, width, height, colors)
+        Score.save_score(PlayerInfo.difficulty, time_elapsed, name)
 
     def main(self, main_screen):
         """ main function """
         self.screen = main_screen
 
+        # Colors
+        colors = Colors()
+
         # Curses config for game optimization
-        napms_value = 25
         curses.cbreak()
         curses.noecho()
         curses.curs_set(0)
         main_screen.keypad(True)
         main_screen.nodelay(True)
 
-        # Colors
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-
         # Screen Size
         height, width = main_screen.getmaxyx()
         Logger.log(
-          "------- Iniciando o jogo {}x{} -------"
-          .format(width, height))
+            "------- Iniciando o jogo {}x{} -------"
+            .format(width, height))
+
+        # Defina o FPS desejado
+        FPS = 60
+        frame_time_ms = int(1000.0 / FPS)
+
+        gameCounter = 0
+        enemyDistance = 0
+
+        # Configurar a dificuldade
+        PlayerInfo.difficulty = Difficulty.EXPERT
+        if (PlayerInfo.difficulty == Difficulty.NOOB):
+            enemyDistance = 20
+            PlayerInfo.position = 30
+        elif (PlayerInfo.difficulty == Difficulty.EXPERT):
+            enemyDistance = 12
+            PlayerInfo.position = 60
 
         # Classes instances
         car = Car(width, height)
         street = Street(width, height)
+        adversaries = []
 
-        # Testes com a pista
-        i = 0
-        subindo = True
+        started_time = time.time()
 
+        # Game loop
         while True:
-            key = main_screen.getch()
-            car.update(key)
+            if (PlayerInfo.position <= 0):
+                time_elapsed = time.time() - started_time
+                self.winGame(main_screen, colors, width, height, time_elapsed)
+                break
 
-            game.draw(0, 0, street.ascii[i])
-            game.draw(car.x, car.y, car.ascii)
+            gameCounter += 1
+            key = main_screen.getch()
+
+            actualStreet = street.update()
+            car.update(key, actualStreet)
+            colors.update(gameCounter)
+
+            game.draw(0, 0, actualStreet, colors.street)
+            game.draw(car.x, car.y, car.ascii, colors.playerCar)
+
+            # Cria os adversários
+            if (len(adversaries) < 3 and gameCounter % enemyDistance == 0):
+                adversaries.append(Enemy(width, height, colors.randomColor()))
+
+            # Atualiza os adversários
+            for enemy in adversaries:
+                enemy.update(actualStreet)
+                game.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
+
+                if car.y < (enemy.yFinal-4) and enemy.collide(car):
+                    Logger.log("Crash!")
+                    curses.beep()
+                    curses.flash()
+                    PlayerInfo.crash()
+                    adversaries.remove(enemy)
+
+                elif enemy.yFinal >= height:
+                    PlayerInfo.overtake()
+                    adversaries.remove(enemy)
+
+            # Mostra as informações do jogador
+            game.write(0, 1, "Posição: {}".format(
+                PlayerInfo.position), colors.ScoreText)
 
             # Atualiza a tela
             main_screen.refresh()
-            curses.napms(napms_value)
-
-            Logger.log("Utilizando a pista {}.".format(i))
-            if (i >= len(street.ascii) - 1 and subindo):
-                subindo = False
-            elif (i <= 0 and not subindo):
-                subindo = True
-
-            if (subindo):
-                i += 1
-            else:
-                i -= 1
+            curses.napms(frame_time_ms)
 
     def run(self):
         """ Run the game """
