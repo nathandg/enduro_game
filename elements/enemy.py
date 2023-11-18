@@ -15,7 +15,7 @@ class Enemy:
         self.carHeight = len(self.ascii)
 
         self.x = (self.width - len(self.ascii[0])) // 2
-        self.y = 2
+        self.y = 10
         self.xFinal = self.x + self.carWidth
         self.yFinal = self.y + self.carHeight
 
@@ -33,19 +33,19 @@ class Enemy:
 
     def identifyPositions(self, street):
         # TODO: Refatorar
-        # positions = []
+        positions = []
 
-        # i = 0
-        # while i < len(street):
-        #     if street[i] == "|":
-        #         positions.append(i)
-        #     i += 1
+        i = 0
+        while i < len(street):
+            if street[i] == "|":
+                positions.append(i)
+            i += 1
 
-        # if self.borderChoice == "left":
-        #     return positions[0]
-        # else:
-        #     return positions[1]
-        return self.width // 2
+        if self.borderChoice == "left":
+            return positions[0]
+        else:
+            return positions[1]
+        # return self.width // 2
 
     def changeCarSize(self, size):
         if size == "big":
@@ -79,9 +79,9 @@ class Enemy:
             self.x = newPosition - self.borderDistance - self.carWidth
 
         # Atualiza o tamanho do desenho
-        if complete >= 55:
+        if complete >= 60:
             self.changeCarSize("big")
-        elif complete >= 20:
+        elif complete >= 30:
             self.changeCarSize("medium")
         else:
             self.changeCarSize("small")
