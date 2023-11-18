@@ -6,7 +6,6 @@ from utils.ascii_art import exit_art
 from utils.ascii_art import noob_art
 from utils.ascii_art import expert_art
 from utils.ascii_art import car_art
-from utils.ascii_art import car_art1
 
 from game import Game
 from Player.PlayerInfo import PlayerInfo
@@ -109,10 +108,10 @@ def main(stdscr):
             draw(stdscr, *centralizar_ascii_art(stdscr, title[0]), titulo[0])
             if selecionado == 0:
                 draw(stdscr, x + 45, y + 5, menu_opcoes[0])
-                draw (stdscr, x + 40, y - 3, car_art)
+                draw (stdscr, x + 40, y - 3, car_art[0])
             else:
                 draw(stdscr, x + 41, y + 5, menu_opcoes[1])
-                draw (stdscr, x + 40, y - 5, car_art1)
+                draw (stdscr, x + 40, y - 5, car_art[1])
 
         key = stdscr.getch()
 
@@ -147,7 +146,7 @@ def main(stdscr):
                     break
 
         stdscr.refresh()
-    game = Game(stdscr)
+    Game(stdscr)
 
 
 if __name__ == "__main__":
