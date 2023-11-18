@@ -8,6 +8,10 @@ from utils.ascii_art import expert_art
 from utils.ascii_art import car_art
 from utils.ascii_art import car_art1
 
+from game import Game
+from Player.PlayerInfo import PlayerInfo
+from utils.Enums import Difficulty
+
 
 def centralizar_ascii_art(stdscr, texto):
     _, largura = stdscr.getmaxyx()
@@ -135,12 +139,15 @@ def main(stdscr):
             elif key == ord("\n"):
                 if selecionado == 0:
                     # Lógica para escolher "Noob"
+                    PlayerInfo.difficulty = Difficulty.NOOB
                     break
                 elif selecionado == 1:
                     # Lógica para escolher "Expert"
+                    PlayerInfo.difficulty = Difficulty.EXPERT
                     break
 
         stdscr.refresh()
+    game = Game(stdscr)
 
 
 if __name__ == "__main__":
