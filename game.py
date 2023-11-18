@@ -13,6 +13,7 @@ from utils.Logger import Logger
 from utils.Enums import Difficulty, TextEffects
 from utils.Colors import Colors
 from utils.ascii_art import winText
+from utils.Score import Score
 
 
 class Game():
@@ -33,6 +34,21 @@ class Game():
             self.screen.addstr(y, x, text, combined)
         else:
             self.screen.addstr(y, x, text, curses.color_pair(color))
+
+    def get_unique_name(self, main_screen, width, height, colors):
+        """ Get a unique name from the user """
+        while True:
+            main_screen.move(height//2 + 12, 0)
+            main_screen.clrtoeol()
+            game.write(
+                width//2 - 15,
+                height//2 + 12,
+                "Nome já existe, digite outro: ",
+                colors.ScoreText
+            )
+            name = main_screen.getstr().decode()
+            if not Score.name_already_exists(name):
+                return name
 
     def winGame(self, main_screen, colors, width, height, time_elapsed):
         """ Win the game """
@@ -55,13 +71,13 @@ class Game():
             "Digite o seu nome: ",
             colors.ScoreText)
 
-        main_screen.nodelay(False)  # Desativa o modo nodelay
-        curses.echo()  # Habilita o echo do input
+        main_screen.nodelay(False)
+        curses.echo()
         main_screen.refresh()
         name = main_screen.getstr().decode()
-
-        curses.noecho()  # Desabilita o echo do input
-        main_screen.nodelay(True)  # Reativa o modo nodelay
+        if Score.name_already_exists(name):
+            name = self.get_unique_name(main_screen, width, height, colors)
+        Score.save_score(PlayerInfo.difficulty, time_elapsed, name)
 
     def main(self, main_screen):
         """ main function """
@@ -88,7 +104,7 @@ class Game():
         enemyDistance = 0
 
         # Configurar a dificuldade
-        PlayerInfo.difficulty = Difficulty.NOOB
+        PlayerInfo.difficulty = Difficulty.EXPERT
         if (PlayerInfo.difficulty == Difficulty.NOOB):
             enemyDistance = 20
             PlayerInfo.position = 30
@@ -105,7 +121,7 @@ class Game():
 
         # Game loop
         while True:
-            if (PlayerInfo.position <= 0):
+            if (PlayerInfo.position <= 55):
                 time_elapsed = time.time() - started_time
                 self.winGame(main_screen, colors, width, height, time_elapsed)
                 break
