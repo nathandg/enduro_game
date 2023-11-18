@@ -1,5 +1,10 @@
 import curses
+
+from Player.PlayerInfo import PlayerInfo
+
 from utils.ascii_art import car_art
+from utils.Logger import Logger
+from utils.Enums import Difficulty
 
 class Car:
     def __init__(self,  width, height):
@@ -11,20 +16,54 @@ class Car:
         self.xFinal = self.x + len(self.ascii[0])
         self.yFinal = self.y + len(self.ascii)
         self.direction = ""
+        self.velocity = self.getVelocityByDifficulty()
     
-    def update(self, key):
-        if key == curses.KEY_RIGHT:
+    def getVelocityByDifficulty(self):
+        if PlayerInfo.difficulty == Difficulty.NOOB:
+            return 2
+        elif PlayerInfo.difficulty == Difficulty.EXPERT:
+            return 5
+
+    def checkCollisionWithBorder(self, street):
+        positions = []
+        for i, x in enumerate(street):
+            if x == "|":
+                positions.append(i)
+
+        if self.x <= positions[0]:
+            self.x = positions[0]
+            self.xFinal = self.x + len(self.ascii[0])
+            return 'left-block'
+        elif self.x >= (positions[1] - len(self.ascii[0])):
+            self.x = positions[1] - len(self.ascii[0])
+            self.xFinal = positions[1]
+            return 'right-block'
+
+        return False
+
+    def update(self, key, street):
+        collided = self.checkCollisionWithBorder(street[self.y])
+
+        if collided == 'left-block':
+            if key == curses.KEY_RIGHT:
+                self.direction = "right"
+            else:
+                self.direction = "blocked"
+
+        elif collided == 'right-block':
+            if key == curses.KEY_LEFT:
+                self.direction = "left"
+            else:
+                self.direction = "blocked"
+
+        elif key == curses.KEY_RIGHT:
             self.direction = "right"
-                        
+
         elif key == curses.KEY_LEFT:
             self.direction = "left"
-        
-        # elif key != curses.KEY_RIGHT and key != curses.KEY_LEFT:
-        #     self.direction = "parado"
 
         if self.direction == "right":
-            self.x += 3
+            self.x += self.velocity
 
         elif self.direction == "left":
-            self.x -= 3
-      
+            self.x -= self.velocity
