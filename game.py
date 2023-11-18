@@ -87,7 +87,6 @@ class Game():
         colors = Colors()
 
         # Curses config for game optimization
-        napms_value = 25
         curses.cbreak()
         curses.noecho()
         curses.curs_set(0)
@@ -100,16 +99,20 @@ class Game():
             "------- Iniciando o jogo {}x{} -------"
             .format(width, height))
 
+        # Defina o FPS desejado
+        FPS = 60
+        frame_time_ms = int(1000.0 / FPS)
+
         gameCounter = 0
         enemyDistance = 0
 
         # Configurar a dificuldade
-        PlayerInfo.difficulty = Difficulty.EXPERT
+        PlayerInfo.difficulty = Difficulty.NOOB
         if (PlayerInfo.difficulty == Difficulty.NOOB):
             enemyDistance = 20
             PlayerInfo.position = 30
         elif (PlayerInfo.difficulty == Difficulty.EXPERT):
-            enemyDistance = 10
+            enemyDistance = 12
             PlayerInfo.position = 60
 
         # Classes instances
@@ -121,7 +124,7 @@ class Game():
 
         # Game loop
         while True:
-            if (PlayerInfo.position <= 55):
+            if (PlayerInfo.position <= 0):
                 time_elapsed = time.time() - started_time
                 self.winGame(main_screen, colors, width, height, time_elapsed)
                 break
@@ -162,7 +165,7 @@ class Game():
 
             # Atualiza a tela
             main_screen.refresh()
-            curses.napms(napms_value)
+            curses.napms(frame_time_ms)
 
     def run(self):
         """ Run the game """

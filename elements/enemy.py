@@ -27,7 +27,7 @@ class Enemy:
 
     def getIncrementByDifficulty(self):
         if PlayerInfo.difficulty == Difficulty.NOOB:
-            return 1
+            return 2
         elif PlayerInfo.difficulty == Difficulty.EXPERT:
             return 0
 
