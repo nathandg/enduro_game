@@ -1,6 +1,6 @@
 import random
 
-from utils.ascii_art import enemy_art_bg, enemy_art_md, enemy_art_sm
+from utils.ascii_art import enemy_art_bg, enemy_art_md, enemy_art_sm, enemy_art_bg_night, enemy_art_md_night, enemy_art_sm_night
 from utils.Logger import Logger
 from utils.Enums import Difficulty
 from Player.PlayerInfo import PlayerInfo
@@ -8,6 +8,7 @@ from Player.PlayerInfo import PlayerInfo
 
 class Enemy:
     def __init__(self,  screenWidth, screenHeight, color=1):
+        self.isNight = False
         self.ascii = enemy_art_sm
         self.width = screenWidth
         self.height = screenHeight
@@ -37,7 +38,7 @@ class Enemy:
 
         i = 0
         while i < len(street):
-            if street[i] == "|":
+            if street[i] == "▐":
                 positions.append(i)
             i += 1
 
@@ -49,11 +50,20 @@ class Enemy:
 
     def changeCarSize(self, size):
         if size == "big":
-            self.ascii = enemy_art_bg
+            if(self.isNight):
+                self.ascii = enemy_art_bg_night
+            else:
+                self.ascii = enemy_art_bg
         elif size == "medium":
-            self.ascii = enemy_art_md
+            if(self.isNight):
+                self.ascii = enemy_art_md_night
+            else:
+                self.ascii = enemy_art_md
         else:
-            self.ascii = enemy_art_sm
+            if(self.isNight):
+                self.ascii = enemy_art_sm_night
+            else:
+                self.ascii = enemy_art_sm
 
         self.carWidth = len(self.ascii[0])
         self.carHeight = len(self.ascii)

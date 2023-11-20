@@ -56,9 +56,9 @@ class Street():
                     positionsX = self.math(minCx + position, line)
                     street.append(
                         " " * (self.width - positionsX[0] - 1)
-                        + "|"
+                        + "▐"
                         + " " * (positionsX[0] - positionsX[1] - 1)
-                        + "|"
+                        + "▐"
                         + " " * (positionsX[1] - 1))
                 else:
                     street.append(

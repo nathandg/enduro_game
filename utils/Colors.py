@@ -15,13 +15,17 @@ class Colors():
             curses.COLOR_MAGENTA,
             curses.COLOR_BLACK
         ]
+        self.isNight = False
 
         # Elements Colors
         self.playerCar = 1
         self.street = 1
         self.ScoreText = 6
+        self.sky = 2
+        self.mountain = 4
 
         self.init_colors()
+        self.dayTheme()
 
     def init_colors(self):
         for i, color in enumerate(self.pallet, start=1):
@@ -29,11 +33,15 @@ class Colors():
 
     def dayTheme(self):
         for i, color in enumerate(self.pallet, start=1):
-            curses.init_pair(i, color, curses.COLOR_BLACK)
+            curses.init_pair(i, color, curses.COLOR_GREEN)
 
         self.playerCar = 1
         self.street = 1
-        self.ScoreText = 6
+        self.ScoreText = 1
+        self.sky = 2
+        self.mountain = 4
+        self.isNight = False
+
 
     def snowTheme(self):
         for i, color in enumerate(self.pallet, start=1):
@@ -41,20 +49,27 @@ class Colors():
 
         self.playerCar = 8
         self.street = 8
+        self.ScoreText = 8
+        self.sky = 2
+        self.mountain = 1
+        self.isNight = False
+
 
     def nightTheme(self):
-        for i, color in enumerate(self.pallet, start=2):
-            curses.init_pair(i, curses.COLOR_BLACK, curses.COLOR_BLACK)
+        for i, color in enumerate(self.pallet, start=1):
+            curses.init_pair(i, color, curses.COLOR_BLACK)
 
-        self.playerCar = 1
         self.street = 1
+        self.playerCar = 1
         self.ScoreText = 1
+        self.sky = 8
+        self.mountain = 1
+        self.isNight = True
 
     def randomColor(self):
-        return random.randint(2, len(self.pallet) - 1)
-
+        return random.choice([3, 7, 5])
+    
     def update(self, gameCounter):
-        if (gameCounter % 500 == 0):
-            self.dayTheme()
-            themes = [self.snowTheme, self.nightTheme, self.dayTheme]
+        if (gameCounter % 50 == 0):
+            themes = [self.dayTheme, self.snowTheme, self.nightTheme]
             random.choice(themes)()

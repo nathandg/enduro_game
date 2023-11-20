@@ -27,7 +27,7 @@ class Car:
     def checkCollisionWithBorder(self, street):
         positions = []
         for i, x in enumerate(street):
-            if x == "|":
+            if x == "▐":
                 positions.append(i)
 
         if self.x <= positions[0]:
