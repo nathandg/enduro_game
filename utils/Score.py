@@ -27,12 +27,3 @@ class Score():
                 scores.append(line)
         file.close()
         return scores
-
-    @staticmethod
-    def name_already_exists(name):
-        """ Validate if name already exists """
-        saves = Score.load_scores()
-        for save in saves:
-            if name == save.split(",")[2].strip():
-                return True
-        return False

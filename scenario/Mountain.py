@@ -2,13 +2,12 @@ from utils.Enums import Direction
 
 
 class Mountain():
-    def __init__(self, width, height, initMount_x):
+    def __init__(self, width, height, initMount_x, mountDistancia):
         self.width = width
         self.height = height
         self.initMount_x = initMount_x
-        self.montanhaDistancia = 10
+        self.mountDistancia = mountDistancia
         self.montanhaCaracteres = []
-        self.flag = False
 
     def generate_mount(self, inicio, distancia, altura, direction):
         eixoX = inicio + (distancia // altura * 2)

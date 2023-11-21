@@ -1,7 +1,7 @@
 """ Enduro Game """
 import curses
 import time
-from curses import wrapper
+import pygame
 
 from elements.car import Car
 from elements.enemy import Enemy
@@ -37,23 +37,34 @@ class Game():
         else:
             self.screen.addstr(y, x, text, curses.color_pair(color))
 
-    def get_unique_name(self, width, height, colors):
-        """ Get a unique name from the user """
-        while True:
-            self.screen.move(height//2 + 12, 0)
-            self.screen.clrtoeol()
-            self.write(
-                width//2 - 15,
-                height//2 + 12,
-                "Nome já existe, digite outro: ",
-                colors.ScoreText
-            )
-            name = self.screen.getstr().decode()
-            if not Score.name_already_exists(name):
-                return name
+    def colision(self, car, colors, PlayerInfo, actualStreet, enemy, gameCounter, frame_time_ms, colisionSound):
+        """ Colision """
+        colisionSound.play()
+        self.draw(car.x, car.y, car.ascii, colors.playerCar, "BOLD")
+        self.write(0, 6, "Posição: {}".format(PlayerInfo.position), colors.ScoreText)
+        self.screen.refresh()
 
-    def winGame(self, colors, width, height, time_elapsed):
+        # Atualize o contador de quadros
+        gameCounter += 1
+
+        # Aguarde até o próximo quadro
+        time.sleep(frame_time_ms / 1000.0)
+
+        enemy.y -= 5
+        enemy.update(actualStreet)
+        self.draw(car.x, car.y, car.ascii, 3)
+        self.write(0, 6, "Posição: {}".format(PlayerInfo.position), 3)
+        self.screen.refresh()
+
+        # Atualize o contador de quadros
+        gameCounter += 1
+
+        # Aguarde até o próximo quadro
+        time.sleep(frame_time_ms / 1000.0)
+
+    def winGame(self, colors, width, height, time_elapsed, victorySound):
         """ Win the game """
+        victorySound.play()
         self.draw(
             width//2 - len(winText[0])//2,
             height//2 - len(winText)//2,
@@ -76,14 +87,16 @@ class Game():
         curses.echo()
         self.screen.nodelay(False)
         self.screen.refresh()
-        name = self.screen.getstr().decode()
-        if Score.name_already_exists(name):
-            name = self.get_unique_name(width, height, colors)
+        name = self.screen.getstr().decode() + "@" + str(time_elapsed).split('.')[1][-4:]
         Score.save_score(PlayerInfo.difficulty, time_elapsed, name)
 
     def main(self):
         """ main function """
-        
+        victorySound = pygame.mixer.Sound("sounds/victorySound.mp3")
+        colisionSound = pygame.mixer.Sound("sounds/colisionSound.mp3")
+        pygame.mixer.music.load('sounds/theme.mp3')
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(-1, 0.0, 5000)
         # Create score file if not exists
         Score.create_file()
 
@@ -123,19 +136,14 @@ class Game():
         car = Car(width, height)
         street = Street(width, height)
         sky = Sky(width, height)
-        mount_1 = Mountain(width, height, 10)
-        mount_2 = Mountain(width, height, 120)
+        mount_1 = Mountain(width, height, 10, 9)
+        mount_2 = Mountain(width, height, 120, 12)
         adversaries = []
 
         started_time = time.time()
 
         # Game loop
         while True:
-            if (PlayerInfo.position <= 0):
-                time_elapsed = time.time() - started_time
-                self.winGame(colors, width, height, time_elapsed)
-                break
-
             gameCounter += 1
             key = self.screen.getch()
 
@@ -152,8 +160,8 @@ class Game():
 
             # Desenha as montanhas
             for i in range(1, 5):
-                mount_1.generate_mount(mount_1.initMount_x, mount_1.montanhaDistancia, i, street.state)
-                mount_2.generate_mount(mount_2.initMount_x, mount_2.montanhaDistancia, i, street.state)
+                mount_1.generate_mount(mount_1.initMount_x, mount_1.mountDistancia, i, street.state)
+                mount_2.generate_mount(mount_2.initMount_x, mount_2.mountDistancia, i, street.state)
 
                 offset = 7 - 3 * i
 
@@ -162,6 +170,12 @@ class Game():
 
                 self.draw(x_position_1, i, mount_1.montanhaCaracteres, colors.mountain)
                 self.draw(x_position_2, i, mount_2.montanhaCaracteres, colors.mountain)
+
+            # Verifica se o jogador ganhou
+            if (PlayerInfo.position <= 0):
+                time_elapsed = time.time() - started_time
+                self.winGame(colors, width, height, time_elapsed, victorySound)
+                break
 
             # Cria os adversários
             if (len(adversaries) < 3 and gameCounter % enemyDistance == 0):
@@ -177,16 +191,23 @@ class Game():
                     enemy.isNight = False
                     self.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
 
-                if car.y < (enemy.yFinal-4) and enemy.collide(car):
-                    Logger.log("Crash!")
-                    curses.beep()
-                    curses.flash()
+            # Verifica colisões e remove adversários
+            adversaries_to_remove = []
+
+            for enemy in adversaries:
+                if car.y < (enemy.yFinal - 4) and enemy.collide(car):
+                    Logger.log("Colisão!")
                     PlayerInfo.crash()
-                    adversaries.remove(enemy)
+                    self.colision(car, colors, PlayerInfo, actualStreet, enemy, gameCounter, frame_time_ms, colisionSound)
+                    adversaries_to_remove.append(enemy)
 
                 elif enemy.yFinal >= height:
                     PlayerInfo.overtake()
-                    adversaries.remove(enemy)
+                    adversaries_to_remove.append(enemy)
+
+            # Remove os adversários detectados
+            for enemy in adversaries_to_remove:
+                adversaries.remove(enemy)
 
             # Mostra as informações do jogador
             self.write(0, 6, "Posição: {}".format(

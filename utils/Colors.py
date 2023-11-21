@@ -38,7 +38,7 @@ class Colors():
         self.playerCar = 1
         self.street = 1
         self.ScoreText = 1
-        self.sky = 2
+        self.sky = 5
         self.mountain = 4
         self.isNight = False
 
@@ -50,7 +50,7 @@ class Colors():
         self.playerCar = 8
         self.street = 8
         self.ScoreText = 8
-        self.sky = 2
+        self.sky = 5
         self.mountain = 1
         self.isNight = False
 

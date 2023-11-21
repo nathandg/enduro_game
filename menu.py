@@ -11,6 +11,9 @@ from game import Game
 from Player.PlayerInfo import PlayerInfo
 from utils.Enums import Difficulty
 
+import pygame
+from pygame import mixer
+
 
 def centralizar_ascii_art(stdscr, texto):
     _, largura = stdscr.getmaxyx()
@@ -68,6 +71,9 @@ def centralizar_opcoes_horizontal(stdscr, menu_opcoes):
     return coordenadas_opcoes
 
 def main(stdscr):
+    mixer.init()
+    pygame.init()
+    pop = pygame.mixer.Sound("sounds/pop.wav")
 
     # Cores
     curses.start_color()
@@ -112,6 +118,7 @@ def main(stdscr):
         key = stdscr.getch()
 
         if etapa == 0:
+            pop.play()
             if key == curses.KEY_UP and selecionado > 0:
                 selecionado -= 1
             elif key == curses.KEY_DOWN and selecionado < len(menu_opcoes) - 1:
@@ -127,6 +134,7 @@ def main(stdscr):
                 elif selecionado == 2:
                     exit()
         elif etapa == 1:
+            pop.play()
             if key == curses.KEY_LEFT and selecionado > 0:
                 selecionado -= 1
             elif key == curses.KEY_RIGHT and selecionado < len(menu_opcoes) - 1:
