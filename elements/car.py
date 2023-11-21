@@ -8,7 +8,7 @@ from utils.Enums import Difficulty
 
 class Car:
     def __init__(self,  width, height):
-        self.ascii = car_art
+        self.ascii = car_art[1]
         self.width = width
         self.height = height
         self.x = (self.width - len(self.ascii[0])) // 2
@@ -16,13 +16,16 @@ class Car:
         self.xFinal = self.x + len(self.ascii[0])
         self.yFinal = self.y + len(self.ascii)
         self.direction = ""
-        self.velocity = self.getVelocityByDifficulty()
+        self.velocity = 0
+        self.configureByDifficulty()
     
-    def getVelocityByDifficulty(self):
+    def configureByDifficulty(self):
         if PlayerInfo.difficulty == Difficulty.NOOB:
-            return 3
+            self.velocity = 2
+            self.ascii = car_art[0]
         elif PlayerInfo.difficulty == Difficulty.EXPERT:
-            return 5
+            self.velocity = 5
+            self.ascii = car_art[1]
 
     def checkCollisionWithBorder(self, street):
         positions = []

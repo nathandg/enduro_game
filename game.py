@@ -20,8 +20,9 @@ from utils.Score import Score
 class Game():
     """ Classe principal do jogo """
 
-    def __init__(self):
-        self.screen = None
+    def __init__(self, stdscr):
+        self.screen = stdscr
+        self.main()
 
     def draw(self, x, y, list, color=1, effect=None):
         """ Print text in screen """
@@ -36,81 +37,83 @@ class Game():
         else:
             self.screen.addstr(y, x, text, curses.color_pair(color))
 
-    def get_unique_name(self, main_screen, width, height, colors):
+    def get_unique_name(self, width, height, colors):
         """ Get a unique name from the user """
         while True:
-            main_screen.move(height//2 + 12, 0)
-            main_screen.clrtoeol()
-            game.write(
+            self.screen.move(height//2 + 12, 0)
+            self.screen.clrtoeol()
+            self.write(
                 width//2 - 15,
                 height//2 + 12,
                 "Nome já existe, digite outro: ",
                 colors.ScoreText
             )
-            name = main_screen.getstr().decode()
+            name = self.screen.getstr().decode()
             if not Score.name_already_exists(name):
                 return name
 
-    def winGame(self, main_screen, colors, width, height, time_elapsed):
+    def winGame(self, colors, width, height, time_elapsed):
         """ Win the game """
-        game.draw(
+        self.draw(
             width//2 - len(winText[0])//2,
             height//2 - len(winText)//2,
             winText,
             colors.ScoreText)
 
-        game.write(
+        self.write(
             width//2 - 6,
             height//2 + 5,
             "Tempo: {:.2f}s".format(time_elapsed),
             colors.ScoreText,
             "BOLD")
 
-        game.write(
+        self.write(
             width//2 - 15,
             height//2 + 10,
             "Digite o seu nome: ",
             colors.ScoreText)
 
-        main_screen.nodelay(False)
         curses.echo()
-        main_screen.refresh()
-        name = main_screen.getstr().decode()
+        self.screen.nodelay(False)
+        self.screen.refresh()
+        name = self.screen.getstr().decode()
         if Score.name_already_exists(name):
-            name = self.get_unique_name(main_screen, width, height, colors)
+            name = self.get_unique_name(width, height, colors)
         Score.save_score(PlayerInfo.difficulty, time_elapsed, name)
 
-    def main(self, main_screen):
+    def main(self):
         """ main function """
-        self.screen = main_screen
 
         # Colors
         colors = Colors()
 
         # Curses config for game optimization
-        napms_value = 25
         curses.cbreak()
         curses.noecho()
         curses.curs_set(0)
-        main_screen.keypad(True)
-        main_screen.nodelay(True)
+        self.screen.keypad(True)
+        self.screen.nodelay(True)
 
         # Screen Size
-        height, width = main_screen.getmaxyx()
+        height, width = self.screen.getmaxyx()
         Logger.log(
             "------- Iniciando o jogo {}x{} -------"
             .format(width, height))
+
+        # Defina o FPS desejado
+        FPS = 60
+        frame_time_ms = int(1000.0 / FPS)
 
         gameCounter = 0
         enemyDistance = 0
 
         # Configurar a dificuldade
-        PlayerInfo.difficulty = Difficulty.NOOB
+        Logger.log("Dificuldade: {}".format(PlayerInfo.difficulty))
         if (PlayerInfo.difficulty == Difficulty.NOOB):
             enemyDistance = 20
             PlayerInfo.position = 30
         elif (PlayerInfo.difficulty == Difficulty.EXPERT):
-            enemyDistance = 10
+            enemyDistance = 12
             PlayerInfo.position = 60
 
         # Classes instances
@@ -127,22 +130,22 @@ class Game():
         while True:
             if (PlayerInfo.position <= 0):
                 time_elapsed = time.time() - started_time
-                self.winGame(main_screen, colors, width, height, time_elapsed)
+                self.winGame(colors, width, height, time_elapsed)
                 break
 
             gameCounter += 1
-            key = main_screen.getch()
+            key = self.screen.getch()
 
             actualStreet = street.update()
             car.update(key, actualStreet)
             colors.update(gameCounter)
 
-            game.draw(0, 0, actualStreet, colors.street)
-            game.draw(car.x, car.y, car.ascii, colors.playerCar)
+            self.draw(0, 0, actualStreet, colors.street)
+            self.draw(car.x, car.y, car.ascii, colors.playerCar)
 
             # Desenha o céu
             for i in range (5):
-                game.draw(0, i, sky.skyBlock, colors.sky)
+                self.draw(0, i, sky.skyBlock, colors.sky)
 
             # Desenha as montanhas
             for i in range(1, 5):
@@ -154,8 +157,8 @@ class Game():
                 x_position_1 = max(0, min(mount_1.initMount_x + offset, width - 1))
                 x_position_2 = max(0, min(mount_2.initMount_x + offset, width - 1))
 
-                game.draw(x_position_1, i, mount_1.montanhaCaracteres, colors.mountain)
-                game.draw(x_position_2, i, mount_2.montanhaCaracteres, colors.mountain)
+                self.draw(x_position_1, i, mount_1.montanhaCaracteres, colors.mountain)
+                self.draw(x_position_2, i, mount_2.montanhaCaracteres, colors.mountain)
 
             # Cria os adversários
             if (len(adversaries) < 3 and gameCounter % enemyDistance == 0):
@@ -166,10 +169,10 @@ class Game():
                 enemy.update(actualStreet)
                 if(colors.isNight):
                     enemy.isNight = True
-                    game.draw(enemy.x, enemy.y, enemy.ascii, 8)
+                    self.draw(enemy.x, enemy.y, enemy.ascii, 8)
                 else:
                     enemy.isNight = False
-                    game.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
+                    self.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
 
                 if car.y < (enemy.yFinal-4) and enemy.collide(car):
                     Logger.log("Crash!")
@@ -183,19 +186,9 @@ class Game():
                     adversaries.remove(enemy)
 
             # Mostra as informações do jogador
-            game.write(0, 6, "Posição: {}".format(
+            self.write(0, 6, "Posição: {}".format(
                 PlayerInfo.position), colors.ScoreText)
 
             # Atualiza a tela
-            main_screen.refresh()
-            curses.napms(napms_value)
-
-    def run(self):
-        """ Run the game """
-        wrapper(self.main)
-
-
-if __name__ == "__main__":
-    Logger.clear()
-    game = Game()
-    game.run()
+            self.screen.refresh()
+            curses.napms(frame_time_ms)
