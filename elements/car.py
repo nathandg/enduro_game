@@ -22,10 +22,10 @@ class Car:
     def configureByDifficulty(self):
         if PlayerInfo.difficulty == Difficulty.NOOB:
             self.velocity = 2
-            self.ascii = car_art[0]
+            self.ascii = car_art[1]
         elif PlayerInfo.difficulty == Difficulty.EXPERT:
             self.velocity = 5
-            self.ascii = car_art[1]
+            self.ascii = car_art[0]
 
     def checkCollisionWithBorder(self, street):
         positions = []

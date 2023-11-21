@@ -68,10 +68,6 @@ def centralizar_opcoes_horizontal(stdscr, menu_opcoes):
     return coordenadas_opcoes
 
 def main(stdscr):
-    curses.curs_set(0)
-    stdscr.nodelay(1)
-    stdscr.timeout(100)
-    stdscr.keypad(1)
 
     # Cores
     curses.start_color()
@@ -107,11 +103,11 @@ def main(stdscr):
             coordenadas_opcoes = centralizar_opcoes_horizontal(stdscr, menu_opcoes)
             draw(stdscr, *centralizar_ascii_art(stdscr, title[0]), titulo[0])
             if selecionado == 0:
-                draw(stdscr, x + 45, y + 5, menu_opcoes[0])
-                draw (stdscr, x + 40, y - 3, car_art[0])
-            else:
-                draw(stdscr, x + 41, y + 5, menu_opcoes[1])
+                draw(stdscr, x + 44, y + 5, menu_opcoes[0])
                 draw (stdscr, x + 40, y - 5, car_art[1])
+            else:
+                draw(stdscr, x + 42, y + 5, menu_opcoes[1])
+                draw (stdscr, x + 40, y - 3, car_art[0])
 
         key = stdscr.getch()
 
@@ -127,9 +123,9 @@ def main(stdscr):
                     titulo = [title]
                     menu_opcoes = [noob_art, expert_art]
                 elif selecionado == 1:
-                    break
+                    exit()
                 elif selecionado == 2:
-                    break
+                    exit()
         elif etapa == 1:
             if key == curses.KEY_LEFT and selecionado > 0:
                 selecionado -= 1

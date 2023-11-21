@@ -70,6 +70,6 @@ class Colors():
         return random.choice([3, 7, 5])
     
     def update(self, gameCounter):
-        if (gameCounter % 50 == 0):
+        if (gameCounter % 500 == 0):
             themes = [self.dayTheme, self.snowTheme, self.nightTheme]
             random.choice(themes)()

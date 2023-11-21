@@ -8,8 +8,8 @@ from Player.PlayerInfo import PlayerInfo
 
 class Enemy:
     def __init__(self,  screenWidth, screenHeight, color=1):
-        self.isNight = False
-        self.ascii = enemy_art_sm
+        self.isNight = True
+        self.ascii = enemy_art_sm_night
         self.width = screenWidth
         self.height = screenHeight
         self.carWidth = len(self.ascii[1])
@@ -49,21 +49,28 @@ class Enemy:
         # return self.width // 2
 
     def changeCarSize(self, size):
+        position = PlayerInfo.difficulty
+
+        if(position == Difficulty.EXPERT):
+            position = 0
+        else:
+            position = 1
+
         if size == "big":
-            if(self.isNight):
+            if(self.isNight and position == 0):
                 self.ascii = enemy_art_bg_night
             else:
-                self.ascii = enemy_art_bg
+                self.ascii = enemy_art_bg[position]
         elif size == "medium":
-            if(self.isNight):
+            if(self.isNight and position == 0):
                 self.ascii = enemy_art_md_night
             else:
-                self.ascii = enemy_art_md
+                self.ascii = enemy_art_md[position]
         else:
-            if(self.isNight):
+            if(self.isNight and position == 0):
                 self.ascii = enemy_art_sm_night
             else:
-                self.ascii = enemy_art_sm
+                self.ascii = enemy_art_sm[position]
 
         self.carWidth = len(self.ascii[0])
         self.carHeight = len(self.ascii)

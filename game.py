@@ -83,6 +83,9 @@ class Game():
 
     def main(self):
         """ main function """
+        
+        # Create score file if not exists
+        Score.create_file()
 
         # Colors
         colors = Colors()
