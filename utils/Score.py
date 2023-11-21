@@ -1,6 +1,17 @@
 class Score():
 
     @staticmethod
+    def create_file():
+        """ Create file if not exists """
+        try:
+            with open("scores.csv", "r") as file:
+                file.close()
+        except FileNotFoundError:
+            with open("scores.csv", "w") as file:
+                file.write("Difficulty, Time, Name \n")
+            file.close()
+
+    @staticmethod
     def save_score(difficulty, time, name):
         """ Clear file """
         with open("scores.csv", "a") as file:

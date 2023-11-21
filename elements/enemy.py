@@ -1,6 +1,6 @@
 import random
 
-from utils.ascii_art import enemy_art_bg, enemy_art_md, enemy_art_sm
+from utils.ascii_art import enemy_art_bg, enemy_art_md, enemy_art_sm, enemy_art_bg_night, enemy_art_md_night, enemy_art_sm_night
 from utils.Logger import Logger
 from utils.Enums import Difficulty
 from Player.PlayerInfo import PlayerInfo
@@ -8,14 +8,15 @@ from Player.PlayerInfo import PlayerInfo
 
 class Enemy:
     def __init__(self,  screenWidth, screenHeight, color=1):
-        self.ascii = enemy_art_sm
+        self.isNight = True
+        self.ascii = enemy_art_sm_night
         self.width = screenWidth
         self.height = screenHeight
         self.carWidth = len(self.ascii[1])
         self.carHeight = len(self.ascii)
 
         self.x = (self.width - len(self.ascii[0])) // 2
-        self.y = 2
+        self.y = 10
         self.xFinal = self.x + self.carWidth
         self.yFinal = self.y + self.carHeight
 
@@ -32,11 +33,12 @@ class Enemy:
             return 0
 
     def identifyPositions(self, street):
+        # TODO: Refatorar
         positions = []
 
         i = 0
         while i < len(street):
-            if street[i] == "|":
+            if street[i] == "▐":
                 positions.append(i)
             i += 1
 
@@ -44,14 +46,31 @@ class Enemy:
             return positions[0]
         else:
             return positions[1]
+        # return self.width // 2
 
     def changeCarSize(self, size):
-        if size == "big":
-            self.ascii = enemy_art_bg
-        elif size == "medium":
-            self.ascii = enemy_art_md
+        position = PlayerInfo.difficulty
+
+        if(position == Difficulty.EXPERT):
+            position = 0
         else:
-            self.ascii = enemy_art_sm
+            position = 1
+
+        if size == "big":
+            if(self.isNight and position == 0):
+                self.ascii = enemy_art_bg_night
+            else:
+                self.ascii = enemy_art_bg[position]
+        elif size == "medium":
+            if(self.isNight and position == 0):
+                self.ascii = enemy_art_md_night
+            else:
+                self.ascii = enemy_art_md[position]
+        else:
+            if(self.isNight and position == 0):
+                self.ascii = enemy_art_sm_night
+            else:
+                self.ascii = enemy_art_sm[position]
 
         self.carWidth = len(self.ascii[0])
         self.carHeight = len(self.ascii)
@@ -77,9 +96,9 @@ class Enemy:
             self.x = newPosition - self.borderDistance - self.carWidth
 
         # Atualiza o tamanho do desenho
-        if complete >= 55:
+        if complete >= 60:
             self.changeCarSize("big")
-        elif complete >= 20:
+        elif complete >= 30:
             self.changeCarSize("medium")
         else:
             self.changeCarSize("small")

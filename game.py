@@ -1,12 +1,13 @@
 """ Enduro Game """
 import curses
-import random
 import time
 from curses import wrapper
 
 from elements.car import Car
 from elements.enemy import Enemy
 from scenario.Street import Street
+from scenario.Sky import Sky
+from scenario.Mountain import Mountain
 
 from Player.PlayerInfo import PlayerInfo
 from utils.Logger import Logger
@@ -82,6 +83,9 @@ class Game():
 
     def main(self):
         """ main function """
+        
+        # Create score file if not exists
+        Score.create_file()
 
         # Colors
         colors = Colors()
@@ -118,6 +122,9 @@ class Game():
         # Classes instances
         car = Car(width, height)
         street = Street(width, height)
+        sky = Sky(width, height)
+        mount_1 = Mountain(width, height, 10)
+        mount_2 = Mountain(width, height, 120)
         adversaries = []
 
         started_time = time.time()
@@ -139,6 +146,23 @@ class Game():
             self.draw(0, 0, actualStreet, colors.street)
             self.draw(car.x, car.y, car.ascii, colors.playerCar)
 
+            # Desenha o céu
+            for i in range (5):
+                self.draw(0, i, sky.skyBlock, colors.sky)
+
+            # Desenha as montanhas
+            for i in range(1, 5):
+                mount_1.generate_mount(mount_1.initMount_x, mount_1.montanhaDistancia, i, street.state)
+                mount_2.generate_mount(mount_2.initMount_x, mount_2.montanhaDistancia, i, street.state)
+
+                offset = 7 - 3 * i
+
+                x_position_1 = max(0, min(mount_1.initMount_x + offset, width - 1))
+                x_position_2 = max(0, min(mount_2.initMount_x + offset, width - 1))
+
+                self.draw(x_position_1, i, mount_1.montanhaCaracteres, colors.mountain)
+                self.draw(x_position_2, i, mount_2.montanhaCaracteres, colors.mountain)
+
             # Cria os adversários
             if (len(adversaries) < 3 and gameCounter % enemyDistance == 0):
                 adversaries.append(Enemy(width, height, colors.randomColor()))
@@ -146,7 +170,12 @@ class Game():
             # Atualiza os adversários
             for enemy in adversaries:
                 enemy.update(actualStreet)
-                self.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
+                if(colors.isNight):
+                    enemy.isNight = True
+                    self.draw(enemy.x, enemy.y, enemy.ascii, 8)
+                else:
+                    enemy.isNight = False
+                    self.draw(enemy.x, enemy.y, enemy.ascii, enemy.color)
 
                 if car.y < (enemy.yFinal-4) and enemy.collide(car):
                     Logger.log("Crash!")
@@ -160,7 +189,7 @@ class Game():
                     adversaries.remove(enemy)
 
             # Mostra as informações do jogador
-            self.write(0, 1, "Posição: {}".format(
+            self.write(0, 6, "Posição: {}".format(
                 PlayerInfo.position), colors.ScoreText)
 
             # Atualiza a tela
